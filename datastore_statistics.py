@@ -14,7 +14,19 @@ class DataStoreStatistics:
         if len(filenames) == 0:
             raise('No filenames were passed to DataStoreStatistics')
 
-    def flag_metrics(self, metric='mean', nstds=2, lh='both', z_score_threshold=3):
+    def flag_metrics(self, outlier='zscore', metric='mean', nstds=2, lh='both', z_score_threshold=3):
+        """
+        Choose the outlier type and call that method
+        """
+
+        if outlier == 'zscore':
+            self.flag_metrics_zscore(metric=metric, lh=lh, z_score_threshold=z_score_threshold)
+        elif outlier == 'quartile':
+            self.flag_metrics_quartile(metric=metric, lh=lh, z_score_threshold=z_score_threshold)
+        else:
+            raise(f'datastore_statistics: {outlier} is an unknown outlier method, must be one of zscore or quartile.')
+
+    def flag_metrics_zscore(self, metric='mean', nstds=2, lh='both', z_score_threshold=3):
         """
         metric: type of metric to check, needs to match one of metrics from reader get_stats
         nstds: number of standard deviations away from the mean to flag
@@ -54,6 +66,7 @@ if __name__ == '__main__':
     parser.add_argument("--metric", type=str, dest="metric", help="Metric to check", default='mean')
     parser.add_argument("--nstds", type=int, dest="nstds", help="Number of standard deviations away to flag.", default=2)
     parser.add_argument("--direction", type=str, dest="direction", help="Direction of standard deviations to flag.", default='both')
+    parser.add_argument("--outlier", type=str, dest="outlier", help="Outlier method (zscore [def], quartiles).", default='zscore')
     parser.add_argument("--z-score-threshold", type=float, dest="z_score_threshold", help="Threshold on the Z-Score at which to flag.", default=3)
 
     args = parser.parse_args()
@@ -62,5 +75,5 @@ if __name__ == '__main__':
 
     filenames = list(Path(args.data_folder).glob('*'))
     dss = DataStoreStatistics(filenames)
-    dss.flag_metrics(args.metric, nstds=args.nstds, lh=args.direction, z_score_threshold=args.z_score_threshold)
+    dss.flag_metrics(args.metric, outlier=outlier, nstds=args.nstds, lh=args.direction, z_score_threshold=args.z_score_threshold)
 
