@@ -5,12 +5,24 @@ The goal of this is to find outliers in large image datasets.  For example, an o
 ## Example:
 
 ```
-$ python3 datastore_statistics.py --data-folder tests/data --metric mean --distance=4 --direction both
+$ python3 datastore_statistics.py --data-folder tests/data --metric mean --distance=2 --direction both
 
-4.8 4.0: tests/data/ADNI_019_S_4293_MR_Axial_2D_PASL_straight_no_ASL__br_raw_20180618154855516_760_S696759_I1011350.dcm: min 0.0, mu 383.0, med 205.0 max 1171.0
-4.4 4.0: tests/data/ADNI_019_S_4293_MR_Axial_2D_PASL_straight_no_ASL__br_raw_20180618154739217_802_S696759_I1011350.dcm: min 0.0, mu 359.0, med 149.5 max 1171.0
+Checking the mean of the images for a zscore more than 2.0 in direction both
+
+2.3 2.0 tests/data2/009076_mask.jpeg: min 0.0, mu 0.0, med 0.0 max 0.0
+2.0 2.0 tests/data2/005088.jpeg: min 0.0, mu 10.3, med 0.0 max 241.0
 ```
 
 # Test Data
 MedicalMNIST
 https://www.kaggle.com/datasets/amritpal333/adni4dicomnano10514
+
+# To Do
+
+* [ ] Create proper package for project 
+* [ ] Create executable python script rather than __main__
+* [ ] Output log file with arbitrary separators for parsing
+* [ ] Recursive through directory structure
+* [ ] Regex on filename
+* [ ] Load images from Dataset/Blobstorage
+* [ ] Add help description to --help
