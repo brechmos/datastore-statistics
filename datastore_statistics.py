@@ -10,6 +10,7 @@ import sys
 import numpy as np
 import scipy.stats as stats
 
+from utils import check_file_writable
 from reader import DataFile
 
 #
@@ -27,11 +28,11 @@ class DataStoreStatistics:
     def _iqr(values):
         return diff(percentile(values, [25, 75]))
     
-    def flag_metrics(self, metric='mean', statistic='zscore', distance=2, lh='both'):
+    def flag_metrics(self, metric='mean', statistic='zscore', distance=2, lh='absolute'):
         """
         metric: type of metric to check, needs to match one of metrics from reader get_stats
         distance: number of standard deviations away from the mean to flag
-        lh: check only 'lower' than mean, 'higher' than mean, or 'both'
+        lh: check only 'lower' than mean, 'higher' than mean, or 'absolute'
         """
 
         self._logger.info(f'Checking the {metric} of the images for a {statistic} more than {distance} in direction {lh}')
@@ -61,6 +62,8 @@ class DataStoreStatistics:
         elif statistic == 'iqr':
             scale = np.diff(np.percentile(values, [25, 75]))[0]
 
+        self._logger.info(f'The data values mean (std) is {np.mean(values):1.3f} +/- {np.std(values):1.3f}, for reference.\n')
+
         # 
         #  Loop over the readers and flag ones beyond the distnace * sstatistic
         #
@@ -68,7 +71,7 @@ class DataStoreStatistics:
         for reader, value in zip(readers, values):
 
             # TODO: Change the separator so it is parseable (e.g., CSV file)
-            if lh == 'both':
+            if lh == 'absolute':
                 if np.abs(value) > scale * distance:
                     self._logger.info(f'{np.abs(value):3.1f} {scale*distance:3.1f} {reader}')
 
@@ -80,34 +83,27 @@ class DataStoreStatistics:
                 if value > (scale * distance):
                     self._logger.info(f'{np.abs(value):3.1f} {scale*distance:3.1f} {reader}')
 
-def check_file_writable(fnm):
-    """
-    https://www.novixys.com/blog/python-check-file-can-read-write/
-    """
-    if os.path.exists(fnm):
-        # path exists
-        if os.path.isfile(fnm): # is it a file or a dir?
-            # also works when file is a link and the target is writable
-            return os.access(fnm, os.W_OK)
-        else:
-            return False # path is a dir, so cannot write as a file
-    # target does not exist, check perms on parent dir
-    pdir = os.path.dirname(fnm)
-    if not pdir: pdir = '.'
-    # target is creatable if parent dir is writable
-    return os.access(pdir, os.W_OK)
 
 if __name__ == '__main__':
     #
     #  Parse arguemnts
     #
+
+    statistic_choices= ['zscore', 'iqr']
+    direction_choices= ['absolute', 'lower', 'higher']
+
     parser = argparse.ArgumentParser()
     parser.add_argument("--data-folder", type=str, dest="data_folder", help="data folder mounting point", default="data/")
     parser.add_argument("--metric", type=str, dest="metric", help="Metric to check (mean [def], median, min, max).", default='mean')
-    parser.add_argument("--statistic", type=str, dest="statistic", help="Stastic for flagging (zscore [def], iqr). ", default='zscore')
+    parser.add_argument("--statistic", type=str, dest="statistic",
+                        help="Stastic for flagging (zscore [def], iqr). ",
+                        choices=statistic_choices, default=statistic_choices[0])
     parser.add_argument("--distance", type=float, dest="distance",
                         help="Distance for statistic for positive flag (1.5 def). ", default=1.5)
-    parser.add_argument("--direction", type=str, dest="direction", help="Direction of standard deviations to flag.", default='both')
+    parser.add_argument("--direction", type=str, dest="direction",
+                        help="Direction of standard deviations to flag.",
+                        choices=direction_choices,
+                        default=direction_choices[0])
     parser.add_argument("--verbose", dest="verbose", help="More information.", action="store_true")
     parser.add_argument("--logfile", type=str, dest="logfile", help="Optional log file.", default='')
 
