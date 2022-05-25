@@ -11,6 +11,7 @@ import shutil
 import pandas as pd
 import sys
 import tqdm
+from utils import check_file_writable, threshold
 
 class CustomDictOne(OrderedDict):
     def __init__(self,*arg,**kw):
@@ -56,10 +57,6 @@ parser.add_argument("--threshold", type=float, dest="threshold",
 parser.add_argument("--threshold-direction", type=str, dest="threshold_direction",
                     help="Direction of threshold (None). ", 
                     choices=direction_choices, default=direction_choices[0])
-parser.add_argument("--direction", type=str, dest="direction",
-                    help="Direction of standard deviations to flag.",
-                    choices=direction_choices,
-                    default=direction_choices[0])
 parser.add_argument("--verbose", dest="verbose", help="More information.", action="store_true")
 parser.add_argument("--logfile", type=str, dest="logfile", help="Optional log file.", default='')
 
@@ -121,15 +118,6 @@ with tqdm.tqdm(file_list, desc='Loading data...', file=sys.stdout) as pbar:
 #
 #  If thresholding
 #
-def threshold(x, thr):
-    if args.threshold_direction == 'absolute':
-        return np.abs(x) > thr
-    elif args.threshold_direction == 'lower':
-        thr = -thr if thr < 0 else thr
-        return x < -thr
-    elif args.threshold_direction == 'higher':
-        return x > thr
-
 if args.statistic == 'zscore': 
 
     # Compute z-score
@@ -141,7 +129,7 @@ if args.statistic == 'zscore':
 
     # Apply threshold
     if args.threshold is not None:
-        file_list = [filename for filename in file_list if threshold(filename['zscore-'+args.metric], args.threshold)]
+        file_list = [filename for filename in file_list if threshold(filename['zscore-'+args.metric], args.threshold, args.threshold_direction)]
 
 elif args.statistic == 'iqr':
 
@@ -152,7 +140,7 @@ elif args.statistic == 'iqr':
 
     # Apply threshold
     if args.threshold is not None:
-        file_list = [filename for filename in file_list if threshold(filename['iqr_scale-'+args.metric], args.threshold)]
+        file_list = [filename for filename in file_list if threshold(filename['iqr_scale-'+args.metric], args.threshold, args.threshold_direction)]
 
 #
 # Print out

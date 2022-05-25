@@ -1,4 +1,5 @@
 import os
+import numpy as np
 
 def check_file_writable(fnm):
     """
@@ -16,3 +17,14 @@ def check_file_writable(fnm):
     if not pdir: pdir = '.'
     # target is creatable if parent dir is writable
     return os.access(pdir, os.W_OK)
+
+
+def threshold(x, thr, thr_direction):
+    if thr_direction == 'absolute':
+        return np.abs(x) > thr
+    elif thr_direction == 'lower':
+        thr = -thr if thr < 0 else thr
+        return x < -thr
+    elif thr_direction == 'higher':
+        return x > thr
+
