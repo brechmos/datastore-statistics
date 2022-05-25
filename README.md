@@ -26,3 +26,4 @@ https://www.kaggle.com/datasets/amritpal333/adni4dicomnano10514
 * [ ] Regex on filename
 * [ ] Load images from Dataset/Blobstorage
 * [ ] Add help description to --help
+* [ ] Stats on one dataset, outliers in another dataset
