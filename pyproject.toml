@@ -1,0 +1,88 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "datastore-statistics"
+version = "0.2.0"
+description = "Lightweight outlier detection for medical image datasets"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "numpy",
+    "scipy",
+    "imageio",
+    "nibabel",
+    "pydicom",
+    "pandas",
+    "tqdm",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pre-commit",
+    "black",
+    "isort",
+    "flake8",
+    "flake8-bugbear",
+    "flake8-comprehensions",
+    "flake8-simplify",
+    "autoflake",
+    "vulture",
+    "mypy",
+    "bump-my-version",
+]
+report = [
+    "Pillow",
+]
+
+[project.scripts]
+ds-stats = "datastore_statistics.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["datastore_statistics*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
+
+[tool.black]
+line-length = 88
+target-version = ['py39']
+
+[tool.isort]
+profile = "black"
+line_length = 88
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+
+[tool.vulture]
+min_confidence = 80
+paths = ["datastore_statistics"]
+exclude = ["tests/"]
+
+[tool.bumpversion]
+current_version = "0.2.0"
+commit = false
+tag = false
+
+[[tool.bumpversion.files]]
+filename = "pyproject.toml"
+search = 'version = "{current_version}"'
+replace = 'version = "{new_version}"'
+
+[[tool.bumpversion.files]]
+filename = "datastore_statistics/__init__.py"
+search = '__version__ = "{current_version}"'
+replace = '__version__ = "{new_version}"'
